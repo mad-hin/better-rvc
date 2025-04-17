@@ -1,0 +1,5 @@
+.DS_Store
+build/
+svg-inkscape/
+octave_workspace
+.venv/
