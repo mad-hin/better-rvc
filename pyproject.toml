@@ -1,0 +1,17 @@
+[project]
+name = "better-rvc"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Marco Tam, Ankh Wong, William Man, Alexia Tsang"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "rpi-gpio (>=0.7.1,<0.8.0)"
+]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
