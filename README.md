@@ -28,11 +28,11 @@ This project is an IoT project that improves the Remote Video Capture (RVC) syst
     gh repo clone mad-hin/better-rvc
     ```
 
-2. install the dependencies using Poetry:
+2. install the dependencies:
 
     ```BASH
     cd better-rvc
-    poetry install
+    bash setup.sh
     ```
 
 ## Project Structure
@@ -42,12 +42,21 @@ This project is an IoT project that improves the Remote Video Capture (RVC) syst
 ├── LoRa
 │   ├── esp32_s3_lora_recevier
 │   │   └── esp32_s3_lora_recevier.ino
-│   └── esp32_s3_lora_sender
-│       └── esp32_s3_lora_sender.ino
+│   ├── esp32_s3_lora_sender
+│   │   └── esp32_s3_lora_sender.ino
+│   └── modified ble keyboard library
+│       └── ESP32-BLE-Keyboard.zip
+├── PCB
+│   ├── esp32_lora_v1-2025-04-27_152140.zip
+│   └── ibom.html
+├── README.md
 ├── poetry.lock
 ├── pyproject.toml
-├── README.md
-└── servo
-    ├── README.md
-    └── servo.py
+├── servo
+│   ├── README.md
+│   ├── __pycache__
+│   │   └── servo.cpython-312.pyc
+│   ├── servo.py
+│   └── test_servo.py
+└── setup.sh
 ```

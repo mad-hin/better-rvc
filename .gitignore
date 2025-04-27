@@ -3,3 +3,4 @@ build/
 svg-inkscape/
 octave_workspace
 .venv/
+__pycache__/

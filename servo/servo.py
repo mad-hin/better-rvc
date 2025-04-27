@@ -15,12 +15,8 @@ def ServoSetup(pin = 7):
 		- If the GPIO is already in use, the setup step is skipped and a message is printed.
 		- The PWM signal is started with a 0% duty cycle.
 	"""
-	try:
-		GPIO.setmode(GPIO.BOARD)
-		GPIO.setup(pin, GPIO.OUT)
-	except RuntimeError:
-		print("GPIO already in use, skipping setup")
-		pass
+	GPIO.setmode(GPIO.BOARD)
+	GPIO.setup(pin, GPIO.OUT)
 
 	pwm=GPIO.PWM(pin, 50)
 	pwm.start(0)
