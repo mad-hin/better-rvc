@@ -5,7 +5,9 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <BleKeyboard.h>
 
+BleKeyboard bleKeyboard;
 const int SW2 = 12; 
 const int SW3 = 13; 
 
@@ -15,24 +17,29 @@ int last_SW3_state = HIGH;
 #define ss 5
 #define rst 14
 #define dio0 2
+#define SENDER_ID 3      // 1 or 2 (lower ID has priority)
 
-#define SENDER_ID 2      // 1 or 2 (lower ID has priority)
-#define SEND_AFTER_ID 1  // 3 or 1 
-
-#define TURN_DELAY_MS 300 // Wait after other sender's transmission
-#define TIMEOUT_MS 1000   // If no message seen, send anyway
+#define TURN_DELAY_MS 200 // Wait after other sender's transmission
+#define TIMEOUT_MS 500   // If no message seen, send anyway
 #define JITTER_MS 300     // Max random delay to avoid sync
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-int counter = 0;
+// as ch1 is weaker somehow
+int offset = 4;
+int closer_channel = 0;
 unsigned long lastHeardTime = 0;
 bool otherSenderActive = false;
 
 String msg = "";
+double closer_channel_rssi = 0;
+
 double rssi = 0;
+double ch1_rssi = 0;
+double ch2_rssi = 0;
+
 double lambda = 3e8/(433e6);
 double actual_distance = 0;
 
@@ -43,6 +50,7 @@ void setup() {
   pinMode(SW3, INPUT_PULLUP);
 
   Serial.println("Starting BLE work!");
+  bleKeyboard.begin();
 
   while (!Serial);
   Serial.print("LoRa Sender ");
@@ -67,20 +75,46 @@ void loop() {
   int current_SW2_state = digitalRead(SW2);
   int current_SW3_state = digitalRead(SW3);
 
-  display.setCursor(0, 36);
-  if (current_SW2_state == LOW && last_SW2_state == HIGH) {
-      Serial.println("Right arrow pressed");
-      display.println("SW2 Pressed");
-  }
+  if(bleKeyboard.isConnected()) {
+    display.setCursor(0, 36);
+    if (current_SW2_state == LOW && last_SW2_state == HIGH) {
+        Serial.println("Right arrow pressed");
+        display.println("SW2 Pressed");
+        bleKeyboard.write(KEY_RIGHT_ARROW);
+    }
 
-  display.setCursor(0, 48);
-  if (current_SW3_state == LOW && last_SW3_state == HIGH){
-    Serial.println("Left arraw pressed");
-    display.println("SW3 Pressed");
+    display.setCursor(0, 48);
+    if (current_SW3_state == LOW && last_SW3_state == HIGH){
+      Serial.println("Left arraw pressed");
+      display.println("SW3 Pressed");
+      bleKeyboard.write(KEY_LEFT_ARROW);
+    }
   }
 
   // Listen for incoming messages
   receiveMessage();
+
+  if(ch1_rssi != 0 && ch2_rssi != 0){
+      if (ch1_rssi+offset > ch2_rssi){
+      closer_channel_rssi = ch1_rssi;
+      closer_channel = 1;
+    } else{
+      closer_channel_rssi = ch2_rssi;
+      closer_channel = 2;
+    }
+  } else{
+    display.setCursor(0, 36);
+    display.println("1/2 channel gg");
+  }
+
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  display.println(String("Send ch") + closer_channel + " to receiver");
+  display.setCursor(0, 12);
+  display.println("Ch1 RSSI: "+ String(ch1_rssi));
+  display.setCursor(0, 24);
+  display.println("Ch2 RSSI: "+ String(ch2_rssi));
 
   // Decide whether to send
   if (shouldSend()) {
@@ -88,20 +122,20 @@ void loop() {
     lastHeardTime = millis(); // Reset timeout
   }
 
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 0);
-  display.println(String("Sending [") + counter + "]");
-  display.setCursor(0, 12);
-  display.println(msg + " (RSSI: "+ rssi +")");
 
+
+  
+
+  // compare the rssi of 2 channel and the closer distance and send to the receiver
+  
+  
 
   // calculate the distance;
-  actual_distance = ((3e8/(433e6))/(4*M_PI))*pow(10,(rssi+12)/(-20));
-  // Serial.println(String("distance:") + actual_distance);
+  // actual_distance = ((3e8/(433e6))/(4*M_PI))*pow(10,(closer_channel_rssi+12)/(-20));
+  // // Serial.println(String("distance:") + actual_distance);
 
-  display.setCursor(0, 24);
-  display.println("distance: "+ String(actual_distance));
+  // display.setCursor(0, 36);
+  // display.println("distance: "+ String(actual_distance));
   display.display();
 
 
@@ -109,7 +143,6 @@ void loop() {
   // Small delay to prevent CPU overload
   last_SW2_state = current_SW2_state;
   last_SW3_state = current_SW3_state;
-  delay(10);
   display.clearDisplay();
 }
 
@@ -138,16 +171,14 @@ bool shouldSend() {
 
 // Send a message
 void sendMessage() {
-  Serial.println(String("Sending [") + counter + "]");
+  Serial.println(String("Sending [") + closer_channel + "]");
   
   LoRa.beginPacket();
   LoRa.print("S");
   LoRa.print(SENDER_ID);
   LoRa.print(":");
-  LoRa.print(counter);
+  LoRa.print(closer_channel);
   LoRa.endPacket();
-  
-  counter++;
 }
 
 // Listen for messages
@@ -165,15 +196,19 @@ void receiveMessage() {
     Serial.print(rssi);
     Serial.println(")");
 
-    // display.setTextSize(1);
-    // display.setTextColor(WHITE);
-    
-    // display.display();
 
-    // Detect if the other sender transmitted
-    if (msg.startsWith("S") && msg.charAt(1) == ('0' + SEND_AFTER_ID)) {
+    // Detect if the other sender transmitted(using random to make sure both channel data are received)
+    if (msg.startsWith("S") && msg.charAt(1) == ('0' + random(1, 2))) {
       otherSenderActive = true;
       lastHeardTime = millis();
     }
+
+    //find the rssi of ch1 and ch2
+    if (msg.startsWith("S") && msg.charAt(1) == ('0' + 1)) {
+        ch1_rssi = LoRa.packetRssi();
+    } else if (msg.startsWith("S") && msg.charAt(1) == ('0' + 2)){
+        ch2_rssi = LoRa.packetRssi();
+    }
+
   }
 }
