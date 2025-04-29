@@ -28,7 +28,7 @@ int last_SW3_state = HIGH;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // as ch1 is weaker somehow
-int offset = 4;
+int offset = 0;
 int closer_channel = 0;
 unsigned long lastHeardTime = 0;
 bool otherSenderActive = false;
