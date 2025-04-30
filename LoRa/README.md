@@ -20,10 +20,10 @@ There are 3 ino file for different purpose of the LoRa module:
 - the one which the presenter will hold the thing during presentation
 - allow the presenter to press right/left arrow button to control the ppt slides
 
-2. **esp32_s3_lora_ble_receiver**: 
+2. **esp32_s3_lora_receiver**: 
 - the one which connected to Raspberry pi
 
-3. **esp32_s3_lora_ble_sender**: 
+3. **esp32_s3_lora_sender**: 
 - there are 2 senders (i call it ch1 and ch2), the purpose of them is to put at the classroom sides 
 
 ## How does this system work?
