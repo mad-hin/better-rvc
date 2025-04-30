@@ -8,6 +8,10 @@
 const int SW2 = 12; 
 const int SW3 = 13; 
 
+#define CONTROLLER_ID 3
+int closer_to_channel = 0;
+String data = "";
+
 #define ss 5
 #define rst 14
 #define dio0 2
@@ -18,9 +22,6 @@ const int SW3 = 13;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 unsigned long lastReceivedTime = 0;
-
-int ch1_rssi = 0;
-int ch2_rssi = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -54,45 +55,32 @@ void loop() {
   if (LoRa.parsePacket()) {
     Serial.print("Received packet: '");
     while (LoRa.available()) {
-      String data = LoRa.readString();
+      data = LoRa.readString();
       Serial.print(data);
 
-      // get ch1 and ch2 rssi 
-      if (data.startsWith("S") && data.charAt(1) == ('0' + 1)) {
-        ch1_rssi = LoRa.packetRssi();
-        
-      } else if (data.startsWith("S") && data.charAt(1) == ('0' + 2)){
-        ch2_rssi = LoRa.packetRssi();
-
+      // get ch3 data and check which channel is the controller closer to 
+      if (data.startsWith("S") && data.charAt(1) == ('0' + CONTROLLER_ID)) {
+        // ch1_rssi = LoRa.packetRssi();
+        closer_to_channel = data.charAt(3) - '0';
       }
+
     }
     Serial.print("' (RSSI: ");
     Serial.print(LoRa.packetRssi());
     Serial.println(")");
 
-    Serial.println(String("Ch1 RSSI: ")+ch1_rssi);
-    Serial.println(String("Ch2 RSSI: ")+ch2_rssi);
+    Serial.println(String("Closer to ch")+String(closer_to_channel));
 
     lastReceivedTime = millis();  // Reset watchdog timer
   }
   
-  // TFT display of ch1 and ch2 RSSI value
+  // TFT display of received data and the closer channel 
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
-  display.println("Ch1 RSSI: "+ String(ch1_rssi));
+  display.println(data + " (RSSI: " + LoRa.packetRssi() + ")");
   display.setCursor(0, 12);
-  display.println("Ch2 RSSI: "+ String(ch2_rssi));
-
-  // compare ch1 or ch2 is closer
-  display.setCursor(0, 24);
-  if(ch1_rssi > ch2_rssi){
-    // Serial.println("Ch1 closer");
-    display.println("Ch1 closer");
-  } else{
-    // Serial.println("Ch2 closer");
-    display.println("Ch2 closer");
-  }
+  display.println("Closer to ch"+ String(closer_to_channel));
   
 
   // Check if timeout has occurred
@@ -111,5 +99,4 @@ void softwareReset() {
   Serial.println("Rebooting...");
   delay(50);
   ESP.restart();  // For ESP32/ESP8266
-  // For Arduino, use: asm volatile ("jmp 0"); 
 }
