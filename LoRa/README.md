@@ -28,7 +28,7 @@ There are 3 ino file for different purpose of the LoRa module:
 
 ## How does this system work?
 <div align="center">
-  <img src="image/LoRa_explain.jpg" width="500"/>
+  <img src="image/LoRa_explain.jpg"/>
 </div>
 
 1. The ch1/2 sender will send signal alternatively(ch1 -> ch2 -> ch1......)
