@@ -9,7 +9,7 @@
 ## Sources that I copy from (for oled and LoRa module):
 
 1. https://randomnerdtutorials.com/esp32-ssd1306-oled-display-arduino-ide/
-2. https://randomnerdtutorials.com/esp32-lora-rfm95-transceiver-arduino-ide/
+2. https://www.instructables.com/ESP32-LoRa-Transciever/
 
 ## BLE Keyboard 
 - The modified library is attached here since the common one found in internet have some issue for the latest arduino version (mainly about the string and std::string problem)
