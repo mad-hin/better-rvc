@@ -110,11 +110,22 @@ void loop() {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
-  display.println(String("Send ch") + closer_channel + " to receiver");
+  display.println(String("Send ch") + closer_channel + "(RSSI:" + closer_channel_rssi + ")");
   display.setCursor(0, 12);
   display.println("Ch1 RSSI: "+ String(ch1_rssi));
   display.setCursor(0, 24);
   display.println("Ch2 RSSI: "+ String(ch2_rssi));
+  display.setCursor(0, 36);
+  display.println("Ch2(L):Ch1(R)");
+
+
+
+
+
+
+
+
+
 
   // Decide whether to send
   if (shouldSend()) {
@@ -171,13 +182,15 @@ bool shouldSend() {
 
 // Send a message
 void sendMessage() {
-  Serial.println(String("Sending [") + closer_channel + "]");
+  Serial.println(String("Sending [") + closer_channel + "," + closer_channel_rssi + "]");
   
   LoRa.beginPacket();
   LoRa.print("S");
   LoRa.print(SENDER_ID);
   LoRa.print(":");
   LoRa.print(closer_channel);
+  LoRa.print(",");
+  LoRa.print(closer_channel_rssi);
   LoRa.endPacket();
 }
 
