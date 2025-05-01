@@ -34,7 +34,7 @@ def SetAngle(angle, pwm, pin = 7):
 	Note:
 		Assumes that the GPIO and PWM have been properly initialized before calling this function.
 	"""
-	duty = angle / 18 + 2
+	duty = 7 + (angle / 90) * 5
 	GPIO.output(pin, True)
 	pwm.ChangeDutyCycle(duty)
 	sleep(1)
