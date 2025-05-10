@@ -4,3 +4,5 @@ svg-inkscape/
 octave_workspace
 .venv/
 __pycache__/
+mediamtx/
+Miniconda3-latest-Linux-aarch64.sh
