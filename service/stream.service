@@ -1,0 +1,12 @@
+[Unit]
+Description=Webcam to RTSP Streaming Service
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+ExecStart=/home/admin/better-rvc/streaming/stream.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

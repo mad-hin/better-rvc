@@ -1,0 +1,13 @@
+[Unit]
+Description=MediaMTX RTSP Server
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/home/admin/better-rvc/mediamtx
+ExecStart=/home/admin/better-rvc/mediamtx/mediamtx
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
