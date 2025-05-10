@@ -8,6 +8,7 @@
 
 const int SW2 = 12; 
 const int SW3 = 13; 
+const int HUMAN_SENSOR = 27; 
 
 int last_SW2_state = HIGH;
 int last_SW3_state = HIGH;
@@ -16,8 +17,8 @@ int last_SW3_state = HIGH;
 #define rst 14
 #define dio0 2
 
-#define SENDER_ID 2      // 1 or 2 (lower ID has priority)
-#define SEND_AFTER_ID 1  // 3 or 1 
+#define SENDER_ID 1      // 1 or 2 (lower ID has priority)
+#define SEND_AFTER_ID 3  // 3 or 1 
 
 #define TURN_DELAY_MS 300 // Wait after other sender's transmission
 #define TIMEOUT_MS 1000   // If no message seen, send anyway
@@ -41,6 +42,7 @@ void setup() {
 
   pinMode(SW2, INPUT_PULLUP);
   pinMode(SW3, INPUT_PULLUP);
+  // pinMode(HUMAN_SENSOR, INPUT);
 
   Serial.println("Starting BLE work!");
 
@@ -66,6 +68,7 @@ void setup() {
 void loop() {
   int current_SW2_state = digitalRead(SW2);
   int current_SW3_state = digitalRead(SW3);
+  // int HUMAN_SENSOR_state = digitalRead(HUMAN_SENSOR);
 
   display.setCursor(0, 36);
   if (current_SW2_state == LOW && last_SW2_state == HIGH) {
@@ -78,6 +81,12 @@ void loop() {
     Serial.println("Left arraw pressed");
     display.println("SW3 Pressed");
   }
+
+  // display.setCursor(90, 0);
+  // if (HUMAN_SENSOR_state == HIGH){
+  //   Serial.println("human!");
+  //   display.println("human!");
+  // }
 
   // Listen for incoming messages
   receiveMessage();
