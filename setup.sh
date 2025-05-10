@@ -5,7 +5,7 @@ sudo apt upgrade -y
 sudo curl -LsSf https://astral.sh/uv/install.sh | sudo env UV_INSTALL_DIR="/bin" sh
 
 # Install the required packages
-sudo apt install python3-rpi.gpio v4l-utils ffmpeg -y
+sudo apt install python3-dev gcc v4l-utils ffmpeg -y
 
 # Install RTSP server
 mkdir mediamtx
