@@ -7,6 +7,7 @@
 
 const int SW2 = 12; 
 const int SW3 = 13; 
+const int HUMAN_SENSOR = 27; 
 
 #define CONTROLLER_ID 3
 int closer_to_channel = 0;
@@ -28,7 +29,7 @@ void setup() {
 
   pinMode(SW2, INPUT_PULLUP);
   pinMode(SW3, INPUT_PULLUP);
-
+  pinMode(HUMAN_SENSOR, INPUT);
   while (!Serial);
   Serial.println("LoRa Receiver with Watchdog");
 
@@ -51,6 +52,9 @@ void setup() {
 }
 
 void loop() {
+
+  int HUMAN_SENSOR_state = digitalRead(HUMAN_SENSOR);
+
   // Check for incoming messages
   if (LoRa.parsePacket()) {
     Serial.print("Received packet: '");
@@ -72,6 +76,12 @@ void loop() {
     Serial.println(String("Closer to ch")+String(closer_to_channel));
 
     lastReceivedTime = millis();  // Reset watchdog timer
+  }
+
+  display.setCursor(90, 0);
+  if (HUMAN_SENSOR_state == LOW){
+    Serial.println("light!");
+    display.println("light!");
   }
   
   // TFT display of received data and the closer channel 
