@@ -2,7 +2,6 @@
 
 ## Overview
 
-This is the expermental branch, trying to migrate the python management to uv.
 This project is an IoT project that improves the Remote Video Capture (RVC) system by auto moving the camera to the best position for capturing the video.
 
 ## Hardware List
@@ -13,7 +12,6 @@ This project is an IoT project that improves the Remote Video Capture (RVC) syst
 ## Pre-requisites
 
 - Python 3.12 or higher
-- ~~[Poetry](https://python-poetry.org/docs/#installation)~~
 
 ## Installation
 
