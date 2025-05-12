@@ -144,4 +144,15 @@ class Inference:
         cap.release()
         cv2.destroyAllWindows()
 
-Inference().inference_real_time()
+
+    def no_inference(self):
+        cap = cv2.VideoCapture(0)
+        while True:
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+            cv2.imshow('Webcam - Face Position', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+Inference().no_inference()
+
