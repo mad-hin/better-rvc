@@ -54,7 +54,6 @@ class Inference:
                     print(f"{image_name}: Moved to professor_middle")
                 break  # Process only the first detected face to avoid multiple moves
 
-    import cv2
 
     def inference_single_image(self, image_path: str, threshold: float = 0.25, show_img = True) -> None:
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -137,7 +136,7 @@ class Inference:
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
                 break
 
-            cv2.imshow('Webcam - Face Position', frame)
+            cv2.imwrite('Webcam - Face Position.png', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

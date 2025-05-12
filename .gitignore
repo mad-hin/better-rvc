@@ -6,3 +6,4 @@ octave_workspace
 __pycache__/
 mediamtx/
 Miniconda3-latest-Linux-aarch64.sh
+.idea/
