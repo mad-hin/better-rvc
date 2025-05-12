@@ -28,13 +28,16 @@ def read_from_serial():
     while True:
         try:
             if ser.in_waiting > 0:
+                # Read and decode a line of data
                 data = ser.readline().decode('utf-8', errors='ignore').strip()
                 print(f"Received from ESP32: {data}")
 
-                if data:
+                # Check any data received by ESP32
+                if data != "":
                     joined_flag = True
 
-                # Extract channel and light status (if data matches the pattern)
+                # --------------------------------------------
+                # extract the channel number from the data
                 if "ch" in data and "light" in data:
                     parts = data.split(';')
                     channel_part = parts[0]  # "Closer to ch2"
@@ -49,6 +52,21 @@ def read_from_serial():
                     print(f"Channel: {channel}, Light status: {light}")
                     closer_to_channel = channel  # Update global variable
 
+                    if closer_to_channel == 1:
+                        print("left")
+                    elif closer_to_channel == 2:    
+                        print("right")
+                    elif closer_to_channel == 0:
+                        print("middle")
+                    else:
+                        print("error")
+                # --------------------------------------------
+                
+
+                # Check if any data is received
+                # if data != "":
+                #     joined_flag = True
+                #     print("NodeMCU has joined, you can now send messages.")
         except Exception as e:
             print(f"Error reading from serial: {e}")
             break

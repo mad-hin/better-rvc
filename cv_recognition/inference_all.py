@@ -98,45 +98,46 @@ class Inference:
             cv2.destroyAllWindows()
 
 
-    def inference_real_time(self, threshold: float = 0.25):
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    def inference_real_time(self, cap, face_cascade, threshold: float = 0.25) -> str:
+        # face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        #
+        # cap = cv2.VideoCapture(0)  # 0 is the default webcam
+        #
+        # if not cap.isOpened():
+        #     print("Error: Could not open webcam")
+        #     exit()
 
-        cap = cv2.VideoCapture(0)  # 0 is the default webcam
+        # # Capture frame-by-frame
+        ret, frame = cap.read()
+        # if not ret:
+        #     print("Error: Could not read frame")
 
-        if not cap.isOpened():
-            print("Error: Could not open webcam")
-            exit()
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        while True:
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-            if not ret:
-                print("Error: Could not read frame")
-                break
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        img_width = frame.shape[1]
 
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        if len(faces) == 0:
+            return "NO FACE"
 
-            img_width = frame.shape[1]
+        for (x, y, w, h) in faces:
+            face_center_x = x + w / 2
+            position = ""
+            if face_center_x < img_width * threshold:
+                return "LEFT"
+            elif face_center_x > img_width * (1 - threshold):
+                return "RIGHT"
+            else:
+                return "MIDDLE"
 
-            for (x, y, w, h) in faces:
-                face_center_x = x + w / 2
-                position = ""
-                if face_center_x < img_width * threshold:
-                    position = "LEFT"
-                elif face_center_x > img_width * (1 - threshold):
-                    position = "RIGHT"
-                else:
-                    position = "MIDDLE"
+                # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                #
+                # cv2.putText(frame, f"Position: {position}", (x, y - 10),
+                #             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                # break
 
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-                cv2.putText(frame, f"Position: {position}", (x, y - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-                break
-
-            cv2.imwrite('Webcam - Face Position.png', frame)
+            # cv2.imwrite('Webcam - Face Position.png', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -150,9 +151,8 @@ class Inference:
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
-            cv2.imshow('Webcam - Face Position', frame)
+            cv2.imwrite('Webcam - Face Position.png', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-Inference().no_inference()
 
