@@ -35,11 +35,8 @@ def SetAngle(angle, pwm, pin = 7):
 		Assumes that the GPIO and PWM have been properly initialized before calling this function.
 	"""
 	duty = 7 + (angle / 90) * 5
-	GPIO.output(pin, True)
 	pwm.ChangeDutyCycle(duty)
 	sleep(1)
-	GPIO.output(pin, False)
-	pwm.ChangeDutyCycle(0)
 
 def ServoCleanup(pwm):
 	"""

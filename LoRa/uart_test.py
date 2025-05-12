@@ -2,102 +2,68 @@ import serial
 import time
 import threading
 
-# Configure serial port
 port = "/dev/ttyUSB0"
 baud_rate = 115200
 ser = serial.Serial(port, baud_rate, timeout=1)
 
-# clsoer channel number sent by ESP32 Serial
 closer_to_channel = 0
-
-# Check if the serial port is successfully opened
-if ser.is_open:
-    print(f"Serial port {port} is opened")
-else:
-    print("Failed to open serial port")
-    exit()
-
-# Flag to track if "Joined" has been received
 joined_flag = False
+light = 0
 
-# Function to read from serial port in a separate thread
 def read_from_serial():
-    # Initialize the global variables(especially for closer_to_channel)
-    global joined_flag, closer_to_channel
-
+    global joined_flag, closer_to_channel, light
     while True:
         try:
             if ser.in_waiting > 0:
-                # Read and decode a line of data
                 data = ser.readline().decode('utf-8', errors='ignore').strip()
-                print(f"Received from ESP32: {data}")
-
-                # Check any data received by ESP32
+                # print(data)
                 if data != "":
                     joined_flag = True
-
-                # --------------------------------------------
-                # extract the channel number from the data
                 if "ch" in data and "light" in data:
                     parts = data.split(';')
-                    channel_part = parts[0]  # "Closer to ch2"
-                    light_part = parts[1]    # "light:1"
+                    channel_part = parts[0]
+                    light_part = parts[1]
 
-                    # Extract channel number (2)
+                    # extract channel part
                     channel = int(channel_part.replace('Closer to ch', '').strip())
-                    
-                    # Extract light status (1)
+
+                    # extract light part
                     light = int(light_part.split(':')[1].strip())
-
-                    print(f"Channel: {channel}, Light status: {light}")
-                    closer_to_channel = channel  # Update global variable
-
-                    if closer_to_channel == 1:
-                        print("left")
-                    elif closer_to_channel == 2:    
-                        print("right")
-                    elif closer_to_channel == 0:
-                        print("middle")
-                    else:
-                        print("error")
-                # --------------------------------------------
-                
-
-                # Check if any data is received
-                # if data != "":
-                #     joined_flag = True
-                #     print("NodeMCU has joined, you can now send messages.")
-        except Exception as e:
-            print(f"Error reading from serial: {e}")
+                    
+                    closer_to_channel = channel
+        except Exception:
             break
 
-# Start the serial reading thread
-serial_thread = threading.Thread(target=read_from_serial, daemon=True)
-serial_thread.start()
+def start_serial_thread():
+    thread = threading.Thread(target=read_from_serial, daemon=True)
+    thread.start()
 
-try:
-    # Wait for "Joined" message before allowing user input
+def get_closer_to_channel():
+    global closer_to_channel
+    if closer_to_channel == 1:
+        mapped = -1 # means left
+    elif closer_to_channel == 2:
+        mapped = 1 # means right
+    elif closer_to_channel == 0:
+        mapped = 0 # means center
+    else:
+        mapped = 5 # means error
+    return mapped
+
+def get_light_status():
+    global light
+    # print(light)
+    return light
+
+# Only run this if executed directly, not on import
+if __name__ == "__main__":
+    start_serial_thread()
     while not joined_flag:
-        time.sleep(0.1)  # Avoid busy-waiting by adding a small delay
-
-    # Now that "Joined" is received, start accepting user input
+        time.sleep(0.1)
     while True:
-        # Wait for user input to send a message
         message = input("Enter a message to send (or 'exit' to quit): ")
         if message.lower() == 'exit':
             break
-
-        # Send the message
         ser.write((message + '\n').encode('utf-8'))
-        print(f"Sent: {message}")
         time.sleep(5)
-        
-
-except KeyboardInterrupt:
-    print("\nProgram interrupted by user")
-except Exception as e:
-    print(f"Error: {e}")
-finally:
-    # Ensure the serial port is closed
     ser.close()
-    print("Serial port closed")
