@@ -27,8 +27,11 @@ int last_SW3_state = HIGH;
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-// as ch1 is weaker somehow
-int offset = 0;
+// set up offset for ch1 and compare ch1 and ch2
+int offset = 3;
+int ch1_offset = 0;
+
+// find closer channel
 int closer_channel = 0;
 unsigned long lastHeardTime = 0;
 bool otherSenderActive = false;
@@ -95,13 +98,21 @@ void loop() {
   receiveMessage();
 
   if(ch1_rssi != 0 && ch2_rssi != 0){
-      if (ch1_rssi+offset > ch2_rssi){
+    // when the controller is at the middle
+    if (abs(ch1_rssi - ch2_rssi) < offset){
+      closer_channel_rssi = ch2_rssi;
+      closer_channel = 0;
+    }
+    // when the controller is closer to ch1
+    else if (ch1_rssi - ch2_rssi > offset){
       closer_channel_rssi = ch1_rssi;
       closer_channel = 1;
-    } else{
+    } 
+    // when the controller is closer to ch2
+    else if (ch2_rssi - ch1_rssi > offset){
       closer_channel_rssi = ch2_rssi;
       closer_channel = 2;
-    }
+    } 
   } else{
     display.setCursor(0, 36);
     display.println("1/2 channel gg");
@@ -118,29 +129,15 @@ void loop() {
   display.setCursor(0, 36);
   display.println("Ch2(L):Ch1(R)");
 
-
-
-
-
-
-
-
-
-
   // Decide whether to send
   if (shouldSend()) {
     sendMessage();
     lastHeardTime = millis(); // Reset timeout
   }
 
-
-
-  
-
   // compare the rssi of 2 channel and the closer distance and send to the receiver
   
   
-
   // calculate the distance;
   // actual_distance = ((3e8/(433e6))/(4*M_PI))*pow(10,(closer_channel_rssi+12)/(-20));
   // // Serial.println(String("distance:") + actual_distance);
@@ -216,9 +213,10 @@ void receiveMessage() {
       lastHeardTime = millis();
     }
 
-    //find the rssi of ch1 and ch2
+    // Find the rssi of ch1 and ch2
     if (msg.startsWith("S") && msg.charAt(1) == ('0' + 1)) {
         ch1_rssi = LoRa.packetRssi();
+        ch1_rssi = ch1_rssi - ch1_offset;
     } else if (msg.startsWith("S") && msg.charAt(1) == ('0' + 2)){
         ch2_rssi = LoRa.packetRssi();
     }

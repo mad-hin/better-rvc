@@ -7,11 +7,14 @@
 
 const int SW2 = 12; 
 const int SW3 = 13; 
-const int HUMAN_SENSOR = 27; 
+const int LIGHT_SENSOR = 27; 
 
 #define CONTROLLER_ID 3
 int closer_to_channel = 0;
 String data = "";
+
+// check room light state
+int light_state = 0;
 
 #define ss 5
 #define rst 14
@@ -29,7 +32,7 @@ void setup() {
 
   pinMode(SW2, INPUT_PULLUP);
   pinMode(SW3, INPUT_PULLUP);
-  pinMode(HUMAN_SENSOR, INPUT);
+  pinMode(LIGHT_SENSOR, INPUT);
   while (!Serial);
   Serial.println("LoRa Receiver with Watchdog");
 
@@ -53,35 +56,38 @@ void setup() {
 
 void loop() {
 
-  int HUMAN_SENSOR_state = digitalRead(HUMAN_SENSOR);
+  int LIGHT_SENSOR_state = digitalRead(LIGHT_SENSOR);
+
+  
 
   // Check for incoming messages
   if (LoRa.parsePacket()) {
-    Serial.print("Received packet: '");
+    // Serial.print("Received packet: '");
     while (LoRa.available()) {
       data = LoRa.readString();
-      Serial.print(data);
+      // Serial.print(data);
 
       // get ch3 data and check which channel is the controller closer to 
       if (data.startsWith("S") && data.charAt(1) == ('0' + CONTROLLER_ID)) {
         // ch1_rssi = LoRa.packetRssi();
         closer_to_channel = data.charAt(3) - '0';
       }
-
     }
-    Serial.print("' (RSSI: ");
-    Serial.print(LoRa.packetRssi());
-    Serial.println(")");
 
-    Serial.println(String("Closer to ch")+String(closer_to_channel));
+    // Serial.print("' (RSSI: ");
+    // Serial.print(LoRa.packetRssi());
+    // Serial.println(")");
+    Serial.print(String("Closer to ch")+String(closer_to_channel)+ ";");
+
+    if (LIGHT_SENSOR_state == LOW){
+      light_state = 1;
+      Serial.println("light:1");
+    } else {
+      light_state = 0;
+      Serial.println("light:0");
+    }
 
     lastReceivedTime = millis();  // Reset watchdog timer
-  }
-
-  display.setCursor(90, 0);
-  if (HUMAN_SENSOR_state == LOW){
-    Serial.println("light!");
-    display.println("light!");
   }
   
   // TFT display of received data and the closer channel 
@@ -91,12 +97,24 @@ void loop() {
   display.println(data + " (RSSI: " + LoRa.packetRssi() + ")");
   display.setCursor(0, 12);
   display.println("Closer to ch"+ String(closer_to_channel));
+  display.setCursor(0, 24);
+  display.println("light:"+ String(light_state));
   
 
   // Check if timeout has occurred
   if (millis() - lastReceivedTime > RESET_TIMEOUT_MS) {
-    Serial.println("No messages for 5s! Resetting...");
-    softwareReset();  // Custom function to reset
+    // Serial.println("No messages for 5s! Resetting...");
+    closer_to_channel = -1;
+    Serial.print(String("Closer to ch")+String(closer_to_channel)+ ";");
+
+    if (LIGHT_SENSOR_state == LOW){
+      light_state = 1;
+      Serial.println("light:1");
+    } else {
+      light_state = 0;
+      Serial.println("light:0");
+    }
+    // softwareReset();  // Custom function to reset
   }
 
   display.display();
