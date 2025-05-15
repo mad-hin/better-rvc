@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 from time import sleep
 
-def ServoSetup(pin = 7):
+def ServoSetup(pin = 19):
 	"""
 	Initializes and sets up a GPIO pin for servo control using PWM.
 
@@ -15,14 +15,14 @@ def ServoSetup(pin = 7):
 		- If the GPIO is already in use, the setup step is skipped and a message is printed.
 		- The PWM signal is started with a 0% duty cycle.
 	"""
-	GPIO.setmode(GPIO.BOARD)
+	GPIO.setmode(GPIO.BCM)
 	GPIO.setup(pin, GPIO.OUT)
 
-	pwm=GPIO.PWM(pin, 50)
-	pwm.start(0)
+	pwm = GPIO.PWM(pin, 50)
+	pwm.start(7)  # Neutral position
 	return pwm
 
-def SetAngle(angle, pwm, pin = 7):
+def SetAngle(angle, pwm, pin = 19):
 	"""
 	Sets the angle of a servo motor using PWM.
 
@@ -34,9 +34,11 @@ def SetAngle(angle, pwm, pin = 7):
 	Note:
 		Assumes that the GPIO and PWM have been properly initialized before calling this function.
 	"""
-	duty = 7 + (angle / 90) * 5
+	duty = 2.0 + ((angle + 90) / 180.0) * (12.0 - 2.0)
 	pwm.ChangeDutyCycle(duty)
-	sleep(1)
+	print(f"Setting angle to {angle} degrees, duty cycle: {duty}")
+	sleep(0.5)  # Let servo reach position
+	pwm.ChangeDutyCycle(0)  # Stop sending signal to reduce jitter
 
 def ServoCleanup(pwm):
 	"""

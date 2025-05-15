@@ -1,0 +1,11 @@
+[Unit]
+Description=Load v4l2loopback module
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/modprobe v4l2loopback devices=1 video_nr=99 card_label="VirtualCam"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

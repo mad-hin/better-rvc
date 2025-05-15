@@ -1,6 +1,7 @@
 [Unit]
 Description=Webcam to RTSP Streaming Service
-After=network.target
+After=virtual_cam.service
+Requires=virtual_cam.service
 
 [Service]
 Type=simple

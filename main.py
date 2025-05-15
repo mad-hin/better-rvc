@@ -14,12 +14,12 @@ if __name__ == "__main__":
         servo.SetAngle(angle, pwm)
         print(f"Current angle: {angle}")
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        cap = cv2.VideoCapture(0)  # 0 is the default webcam
+        cap = cv2.VideoCapture(99)  # 0 is the default webcam
         infer = Inference()
         uart.start_serial_thread()
 
         light_off_start = None  # Track when light turns off
-        not_exit = False  # Flag to indicate if the program should exit
+        not_exit = True  # Flag to indicate if the program should exit
 
         while True:
             pos = infer.inference_real_time(cap, face_cascade, threshold= 0.25)
@@ -30,18 +30,18 @@ if __name__ == "__main__":
             print(f"Current light status: {light}")
             
             # Check the channel and light status to determine the servo position
-            if (light == 1) or not_exit:
+            if (light == 1):
                 light_off_start = None  # Reset counter if light is on
                 not_exit = True  # Set flag to indicate the program should not exit
                 if (pos == "NO FACE" and not cv_override):
                     if channel == -1:
-                        angle += 15
+                        angle += 25
                         if angle > 90:
                             angle = 90
                         servo.SetAngle(angle, pwm)
                         print(f"Current angle: {angle}")
                     elif channel == 1:
-                        angle -= 15
+                        angle -= 25
                         if angle < -90:
                             angle = -90
                         servo.SetAngle(angle, pwm)
@@ -51,20 +51,22 @@ if __name__ == "__main__":
                 
                 if (pos == "LEFT"):
                     cv_override = True
-                    angle += 5
+                    angle += 10
                     if angle > 90:
                         angle = 90
                     servo.SetAngle(angle, pwm)
                     print(f"Current angle: {angle}")
                 elif (pos == "RIGHT"):
                     cv_override = True
-                    angle -= 5
+                    angle -= 10
                     if angle < -90:
                         angle = -90
                     servo.SetAngle(angle, pwm)
                     print(f"Current angle: {angle}")
                 else:
                     cv_override = True
+                    print(f"Current angle: {angle}")
+                # time.sleep(1)
             else:
                 if light_off_start is None:
                     light_off_start = time.time()
@@ -75,7 +77,7 @@ if __name__ == "__main__":
                         print("Light has been off for 30 seconds!")
                         # Place your 30s action here
                         light_off_start = time.time()  # Reset if you want repeated actions every 30s
-                        not_exit = False  # Set flag to indicate the program should exit
+                        servo.SetAngle(0, pwm)
                         cv_override = False
 
     except KeyboardInterrupt:
